@@ -1,9 +1,7 @@
-name: Release
+name: Test
 
 on:
   push:
-    tags:
-      - '*'
 
 jobs:
   build:
@@ -12,25 +10,18 @@ jobs:
       matrix:
         os:
           - ubuntu-latest
-          - macOS-latest
-        cabal:
-          - "3.6.2.0"
-        ghc:
-          - "9.4.2"
 
     steps:
       - name: Checkout
         uses: actions/checkout@v2
 
-      - name: Setup Haskell
-        uses: haskell/actions/setup@v1.2
-        id: setup-haskell-cabal
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
         with:
-          ghc-version: ${{ matrix.ghc }}
-          cabal-version: ${{ matrix.cabal }}
+          buildkitd-flags: --debug
 
       - name: Build
-        run: cabal install exe:cabal-fmt --install-method=copy --overwrite-policy=always --installdir=dist
+        run: docker buildx build . -o dist
 
       - name: Test
         run: ./dist/cabal-fmt --version
